@@ -1,17 +1,16 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.1.0 (MINOR — two new principles added)
-Modified principles: none (I–V unchanged)
+Version change: 1.1.1 → 1.2.0 (MINOR — new principle VIII added)
+Modified principles: none (I–VII unchanged)
 Added sections:
-  - VI. Git & Version Control
-  - VII. Code Review
-  - Governance table: "Commit" row added, "Review" row strengthened to ref VII
+  - VIII. Parallel Multi-Agent Execution
+  - Governance table: "Parallel Execution" row added under Implement
 Removed sections: none
 Templates reviewed:
-  - .specify/templates/plan-template.md      ✅ Constitution Check section present; compatible
+  - .specify/templates/plan-template.md      ✅ No changes required
   - .specify/templates/spec-template.md      ✅ No changes required
-  - .specify/templates/tasks-template.md     ✅ No changes required
+  - .specify/templates/tasks-template.md     ✅ [P] marker convention already present; compatible
   - .specify/templates/checklist-template.md ✅ No changes required
 Deferred TODOs: none
 -->
@@ -70,15 +69,31 @@ Deferred TODOs: none
 
 ### VI. Git & Version Control (NON-NEGOTIABLE)
 
-- **Conventional Commits**: every commit MUST follow `type(scope): subject`. Subject ≤50 chars, imperative mood. Allowed types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`.
-- **Commit messages capture WHY**: the diff shows what changed; the message explains the reason. Body only when reasoning is non-obvious.
-- **One logical change per commit**: unrelated changes MUST NOT be mixed. Each Spec Kit phase (constitution, specify, plan, tasks, implement) produces its own commit so history reads as a clean timeline.
-- **Named staging only**: never `git add -A` or `git add .`. Stage files by name to prevent secrets or build artifacts from leaking into history.
-- **No AI co-author trailers**: commit messages MUST NOT include `Co-Authored-By: Claude ...` or any equivalent AI authorship metadata.
-- **Feature branches**: every feature is built on its own branch (e.g. `001-task-list`). Direct commits to `main` are prohibited.
-- **Push policy**: push feature branches to the remote and open a Pull Request to merge into `main`. Never push straight to `main`. Never force-push a shared branch.
+- **Conventional Commits**: every commit MUST follow `type(scope): subject`. Subject ≤50 chars, imperative mood.
+  Allowed types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`, `style`.
+  Enforced subject pattern: `^(feat|fix|docs|test|refactor|chore|ci|build|perf|style)(\(.+\))?: .{1,50}$`
+- **Tooling enforcement**: commit format is enforced locally via **commitlint** wired through a **husky** `commit-msg`
+  hook. A non-conforming message MUST be rejected before it reaches the remote.
+  Install dev deps once during project setup:
+  ```
+  pnpm add -D commitlint @commitlint/config-conventional husky
+  ```
+  A non-conforming commit message MUST NOT be force-pushed past the hook.
+- **Commit messages capture WHY**: the diff shows what changed; the message explains the reason. Body only when
+  reasoning is non-obvious.
+- **One logical change per commit**: unrelated changes MUST NOT be mixed. Each Spec Kit phase (constitution, specify,
+  plan, tasks, implement) produces its own commit so history reads as a clean timeline.
+- **Named staging only**: never `git add -A` or `git add .`. Stage files by name to prevent secrets or build
+  artifacts from leaking into history.
+- **No AI co-author trailers**: commit messages MUST NOT include `Co-Authored-By: Claude ...` or any equivalent
+  AI authorship metadata.
+- **Feature branches**: every feature is built on its own branch (e.g. `001-task-list`). Direct commits to `main`
+  are prohibited.
+- **Push policy**: push feature branches to the remote and open a Pull Request to merge into `main`. Never push
+  straight to `main`. Never force-push a shared branch.
 
-**Rationale**: Clean, traceable history makes code review, bisect, and rollback reliable. Naming staged files prevents credential leaks.
+**Rationale**: Clean, traceable history makes code review, bisect, and rollback reliable. Local enforcement via
+commitlint/husky catches format errors before they reach CI or reviewers.
 
 ### VII. Code Review (NON-NEGOTIABLE)
 
@@ -96,6 +111,28 @@ Deferred TODOs: none
 
 **Rationale**: PRs are the enforcement layer for all other principles. Without a hard review gate, principles degrade into suggestions.
 
+### VIII. Parallel Multi-Agent Execution (NON-NEGOTIABLE)
+
+- **Orchestrator model**: during `/speckit-implement`, the lead agent acts as orchestrator. Tasks marked `[P]` in
+  `tasks.md` MUST be executed concurrently by spawning one sub-agent per parallel task. Unmarked tasks MUST run
+  sequentially in dependency order.
+- **Disjoint files only**: a task MUST be marked `[P]` only when it shares no files with any other concurrently
+  running task. Two agents MUST NEVER write the same file at the same time. If two pending tasks are discovered
+  to share a file, they MUST be merged into one sequential task before execution begins.
+- **Dependency order is absolute** and overrides parallelism. The required layer order is:
+  `types/` → DB schema/migrations → `app/api/` route handlers → UI components.
+  A downstream layer MUST NOT start until every upstream layer it depends on is committed and verified.
+- **Migrations always sequential**: database migrations and schema changes MUST NEVER run in parallel with any
+  other task.
+- **Sub-agent brief requirements**: every sub-agent brief MUST explicitly state (a) its single task, (b) the exact
+  files it owns, (c) the files it MUST NOT touch, and (d) the acceptance criterion (real DB test passes per
+  Principle III). The orchestrator MUST verify each sub-agent's diff before marking the task done.
+- **Batch test gate**: after each parallel batch completes, the orchestrator MUST run the full test suite before
+  starting the next batch. A failing suite MUST halt the next batch until fixed.
+
+**Rationale**: Parallel execution speeds up implementation but introduces write conflicts and integration failures
+when agents share files. Strict file-ownership and dependency-order rules eliminate both classes of failure.
+
 ## Tech Stack Reference
 
 | Concern | Choice |
@@ -108,6 +145,7 @@ Deferred TODOs: none
 | Shared types | `types/` folder |
 | Shared UI logic | `lib/` or `helpers/` |
 | API surface | `app/api/` route handlers |
+| Commit linting | commitlint + @commitlint/config-conventional + husky |
 
 ## Governance
 
@@ -119,6 +157,7 @@ Deferred TODOs: none
 | **Plan** | Constitution Check in `plan.md` MUST pass before Phase 0 research proceeds. Verify tech stack (I), component structure (II), test strategy (III), REST surface (IV). |
 | **Tasks** | Every task referencing a DB operation MUST pair with a real-integration-test task (III). Tasks touching UI MUST produce composable components (II). |
 | **Implement** | Route handlers validate input at the boundary (II). Types go in `types/` (II). No direct DB calls outside `app/api/` (IV). pnpm only (I). |
+| **Parallel Execution** | `[P]` tasks spawn one sub-agent each; disjoint file ownership verified before dispatch. Dependency order enforced: `types/` → schema → `app/api/` → UI (VIII). Migrations always sequential (VIII). Full test suite runs after each batch before the next starts (VIII). |
 | **Commit** | Conventional Commits format (`type(scope): subject`, ≤50 chars). Stage named files only — no `git add -A`. One logical change per commit; one commit per Spec Kit phase. No AI co-author trailers. Feature branch only — never commit to `main` (VI). |
 | **Review / Merge** | PR MUST pass all review-gate criteria (VII): real DB tests, no mocks, composable components, no duplication, curl-reachable API, boundary validation, typed with JSDoc, issue + docs/ in sync, Conventional Commits on branch. Self-merge prohibited. |
 
@@ -138,6 +177,6 @@ Deferred TODOs: none
 
 ### Compliance
 
-All PRs and spec reviews MUST verify compliance with all five core principles. A violation blocks merge until resolved or an explicit exception is documented in the Complexity Tracking table of the relevant `plan.md`.
+All PRs and spec reviews MUST verify compliance with all eight core principles. A violation blocks merge until resolved or an explicit exception is documented in the Complexity Tracking table of the relevant `plan.md`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-06-21 | **Last Amended**: 2026-06-21
+**Version**: 1.2.0 | **Ratified**: 2026-06-21 | **Last Amended**: 2026-06-21

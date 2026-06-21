@@ -1,7 +1,7 @@
 import { listTasks } from '@/lib/tasks';
 import TaskList from '@/components/TaskList/TaskList';
 
-export default async function Home(): Promise<JSX.Element> {
+export default async function Home() {
   const tasks = await listTasks();
 
   return (

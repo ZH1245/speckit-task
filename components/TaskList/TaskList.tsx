@@ -1,3 +1,5 @@
+import React from 'react';
+
 import type { Task } from '@/types/task';
 import TaskRow from './TaskRow';
 

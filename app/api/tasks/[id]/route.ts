@@ -1,0 +1,42 @@
+import { NextResponse } from 'next/server';
+import { updateTask } from '@/lib/tasks';
+import { updateTaskSchema } from '@/lib/validators/task';
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
+  try {
+    const { id } = await params;
+    const body: unknown = await request.json();
+    const result = updateTaskSchema.safeParse(body);
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: result.error.issues.map(({ path, message }) => ({
+            field: path.join('.'),
+            message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    const task = await updateTask(id, result.data);
+
+    if (task === null) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ task }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// TODO (T035): implement DELETE handler
+export async function DELETE(): Promise<NextResponse> {
+  return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
+}

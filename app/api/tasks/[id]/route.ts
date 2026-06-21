@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { updateTask } from '@/lib/tasks';
+
+import { updateTask, deleteTask } from '@/lib/tasks';
 import { updateTaskSchema } from '@/lib/validators/task';
 
 export async function PATCH(
@@ -36,7 +37,18 @@ export async function PATCH(
   }
 }
 
-// TODO (T035): implement DELETE handler
-export async function DELETE(): Promise<NextResponse> {
-  return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
+  try {
+    const { id } = await params;
+    const deleted = await deleteTask(id);
+    if (!deleted) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+    return new NextResponse(null, { status: 204 });
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

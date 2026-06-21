@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import type { Task } from '@/types/task';
@@ -55,7 +55,7 @@ export default function TaskRow({ task }: TaskRowProps) {
   });
 
   return (
-    <>
+    <Fragment>
       <tr>
         <td style={cellStyle}>{task.title}</td>
         <td style={cellStyle}>
@@ -88,6 +88,6 @@ export default function TaskRow({ task }: TaskRowProps) {
           onCancel={() => setShowDialog(false)}
         />
       )}
-    </>
+    </Fragment>
   );
 }

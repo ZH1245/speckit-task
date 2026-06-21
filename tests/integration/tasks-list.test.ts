@@ -1,6 +1,5 @@
 import { sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { tasks } from '@/db/schema';
 import { listTasks, createTask } from '@/lib/tasks';
 
 describe('GET /api/tasks — listTasks()', () => {

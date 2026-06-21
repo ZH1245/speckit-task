@@ -5,25 +5,9 @@ import type { CSSProperties } from 'react';
 
 import type { Task } from '@/types/task';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
-
-const statusStyle: Record<Task['status'], CSSProperties> = {
-  'todo': { backgroundColor: '#e5e7eb', color: '#374151' },
-  'in-progress': { backgroundColor: '#dbeafe', color: '#1e40af' },
-  'done': { backgroundColor: '#d1fae5', color: '#065f46' },
-};
-
-const priorityStyle: Record<Task['priority'], CSSProperties> = {
-  'low': { backgroundColor: '#f3f4f6', color: '#6b7280' },
-  'medium': { backgroundColor: '#fef9c3', color: '#854d0e' },
-  'high': { backgroundColor: '#fee2e2', color: '#991b1b' },
-};
-
-const badgeStyle: CSSProperties = {
-  padding: '2px 8px',
-  borderRadius: '9999px',
-  fontSize: '0.75rem',
-  fontWeight: 500,
-};
+import InlineEditField from './InlineEditField';
+import StatusSelect from './StatusSelect';
+import PrioritySelect from './PrioritySelect';
 
 const cellStyle: CSSProperties = {
   padding: '8px 12px',
@@ -47,8 +31,9 @@ interface TaskRowProps {
 
 export default function TaskRow({ task }: TaskRowProps) {
   const [showDialog, setShowDialog] = useState(false);
+  const [currentTask, setCurrentTask] = useState<Task>(task);
 
-  const formattedDate = new Date(task.createdAt).toLocaleDateString('en-US', {
+  const formattedDate = new Date(currentTask.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -57,16 +42,44 @@ export default function TaskRow({ task }: TaskRowProps) {
   return (
     <Fragment>
       <tr>
-        <td style={cellStyle}>{task.title}</td>
         <td style={cellStyle}>
-          <span style={{ ...badgeStyle, ...statusStyle[task.status] }}>
-            {task.status}
-          </span>
+          <InlineEditField
+            value={currentTask.title}
+            onSave={async (title) => {
+              await fetch(`/api/tasks/${currentTask.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title }),
+              });
+              setCurrentTask((t) => ({ ...t, title }));
+            }}
+          />
         </td>
         <td style={cellStyle}>
-          <span style={{ ...badgeStyle, ...priorityStyle[task.priority] }}>
-            {task.priority}
-          </span>
+          <StatusSelect
+            value={currentTask.status}
+            onChange={async (status) => {
+              await fetch(`/api/tasks/${currentTask.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status }),
+              });
+              setCurrentTask((t) => ({ ...t, status }));
+            }}
+          />
+        </td>
+        <td style={cellStyle}>
+          <PrioritySelect
+            value={currentTask.priority}
+            onChange={async (priority) => {
+              await fetch(`/api/tasks/${currentTask.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ priority }),
+              });
+              setCurrentTask((t) => ({ ...t, priority }));
+            }}
+          />
         </td>
         <td style={{ ...cellStyle, color: '#6b7280', fontSize: '0.875rem' }}>
           {formattedDate}
@@ -79,8 +92,8 @@ export default function TaskRow({ task }: TaskRowProps) {
       </tr>
       {showDialog && (
         <DeleteConfirmDialog
-          taskId={task.id}
-          taskTitle={task.title}
+          taskId={currentTask.id}
+          taskTitle={currentTask.title}
           onDeleted={() => {
             setShowDialog(false);
             window.location.reload();

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, KeyboardEvent, CSSProperties } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import type { KeyboardEvent, CSSProperties } from 'react';
 
 interface InlineEditFieldProps {
   value: string;

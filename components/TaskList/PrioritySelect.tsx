@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, CSSProperties } from 'react';
+import React, { useState } from 'react';
+import type { CSSProperties } from 'react';
 
-import { TaskPriority } from '@/types/task';
+import type { TaskPriority } from '@/types/task';
 
 interface PrioritySelectProps {
   value: TaskPriority;

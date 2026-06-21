@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, CSSProperties } from 'react';
+import React, { useState } from 'react';
+import type { CSSProperties } from 'react';
 
-import { TaskStatus } from '@/types/task';
+import type { TaskStatus } from '@/types/task';
 
 interface StatusSelectProps {
   value: TaskStatus;

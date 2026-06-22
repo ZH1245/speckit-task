@@ -16,6 +16,36 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Database (Docker)
+
+The app needs PostgreSQL. A `docker-compose.yml` is provided that boots Postgres and, on first start, auto-creates the `tasks_dev` and `tasks_test` databases **and** the `tasks` table — no manual SQL.
+
+```bash
+docker compose up -d          # starts Postgres on localhost:5432
+```
+
+`.env.local` should point at it:
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tasks_dev
+DATABASE_URL_TEST=postgresql://postgres:postgres@localhost:5432/tasks_test
+```
+
+> Port 5432 must be free. If another Postgres already owns it, stop that one first (`docker ps`), or change the host port in `docker-compose.yml` and the URLs above.
+
+Then run the app (`pnpm dev`) or the tests (`pnpm test`). To reset the data: `docker compose down -v`.
+
+## Running the app in Docker
+
+A production image is provided via the `Dockerfile` (Next.js standalone output):
+
+```bash
+docker build -t speckit-task .
+docker run --rm -p 3000:3000 \
+  -e DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/tasks_dev \
+  speckit-task
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

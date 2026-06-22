@@ -321,6 +321,27 @@ Permanent: Cursor → `Cmd+Shift+P` → "Toggle Auto Attach" → Disabled, or ru
 
 ---
 
+## Post-implement recap — the messy real part
+
+What actually happened after `/speckit-implement`, and how it got to a clean `main`. The honest workshop story.
+
+1. **Implement produced a deep PR stack, not 12 independent PRs.** 12 PRs (#47–#58), each branched off the one below; only foundation targeted `main`.
+2. **Naively merging the stack caused a conflict storm.** Squash-merging out of dependency order (and retargeting dependents to `main`) rewrote history under the others → 5 PRs went `CONFLICTING` on shared route files. Lesson now in constitution VI: merge stacks bottom-up, never retarget out of order; prefer shallow independent PRs.
+3. **Recovery = local integration branch.** Created `integrate` off `main`, merged the two sub-stacks (UI tip + API-update tip), resolved the `page.tsx` / `package.json` / route conflicts by hand, got `pnpm build` green.
+4. **Build fix:** the tasks page queried the DB at build time → added `export const dynamic = 'force-dynamic'` so it renders per-request.
+5. **Landed it:** fast-forwarded `main` to `integrate` (no force-push — `main` was an ancestor), then closed the superseded PRs, closed all task issues, deleted every feature branch.
+6. **Env gotchas that ate time:**
+   - `nvm` default was **node 10** → broke `pnpm`, husky hooks, and `pnpm dev` with a cryptic `Unexpected token .`. Fixed: `nvm alias default 20`.
+   - Cursor Auto-Attach injected a malformed `NODE_OPTIONS` → `bootloader.js MODULE_NOT_FOUND`. Fixed: `NODE_OPTIONS= pnpm dev` / disable Auto Attach.
+   - **Postgres port collision:** a bare `docker run postgres` (no `-p`, no `POSTGRES_DB`) was unreachable, and host `5432` belonged to a *different* project's container → `tasks_dev` missing → `Failed query ... from "tasks"`.
+7. **Dockerized to kill the env pain** (branch + PR #60, squash-merged, issue #59 closed, branch deleted): `docker-compose.yml` (Postgres auto-creating `tasks_dev`/`tasks_test` + the `tasks` table) and a standalone `Dockerfile`.
+
+**Constitution ended at v1.2.0** — added Git merge strategy, branch cleanup, squash + explicit issue-close, and the stacked-PR-bottom-up rule (born directly from step 2's pain).
+
+> Biggest takeaway: spec-kit gets you a full, building scaffold fast — the integration, env, and DB last-mile is hands-on. Budget ~1h beyond the implement run.
+
+---
+
 ## Auto-commit configuration
 
 By default the git extension's commit hooks are `optional: true` — they only print a suggestion, they never run. To make every phase auto-commit, edit `.specify/extensions.yml` and set each `speckit.git.commit` hook to `optional: false` (leave `agent-context` optional). Only `optional: false` hooks emit `EXECUTE_COMMAND` and auto-run.

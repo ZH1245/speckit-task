@@ -1,29 +1,13 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import type { CSSProperties } from 'react';
 
 import type { Task } from '@/types/task';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
 import InlineEditField from './InlineEditField';
 import StatusSelect from './StatusSelect';
 import PrioritySelect from './PrioritySelect';
-
-const cellStyle: CSSProperties = {
-  padding: '8px 12px',
-  borderBottom: '1px solid #e5e7eb',
-};
-
-const deleteButtonStyle: CSSProperties = {
-  padding: '4px 10px',
-  borderRadius: '4px',
-  border: '1px solid #fca5a5',
-  backgroundColor: '#fff1f2',
-  color: '#dc2626',
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  cursor: 'pointer',
-};
+import styles from './TaskList.module.css';
 
 interface TaskRowProps {
   task: Task;
@@ -41,8 +25,8 @@ export default function TaskRow({ task }: TaskRowProps) {
 
   return (
     <Fragment>
-      <tr>
-        <td style={cellStyle}>
+      <tr className={styles.row}>
+        <td className={styles.td}>
           <InlineEditField
             value={currentTask.title}
             onSave={async (title) => {
@@ -55,7 +39,7 @@ export default function TaskRow({ task }: TaskRowProps) {
             }}
           />
         </td>
-        <td style={cellStyle}>
+        <td className={styles.td}>
           <StatusSelect
             value={currentTask.status}
             onChange={async (status) => {
@@ -68,7 +52,7 @@ export default function TaskRow({ task }: TaskRowProps) {
             }}
           />
         </td>
-        <td style={cellStyle}>
+        <td className={styles.td}>
           <PrioritySelect
             value={currentTask.priority}
             onChange={async (priority) => {
@@ -81,11 +65,9 @@ export default function TaskRow({ task }: TaskRowProps) {
             }}
           />
         </td>
-        <td style={{ ...cellStyle, color: '#6b7280', fontSize: '0.875rem' }}>
-          {formattedDate}
-        </td>
-        <td style={cellStyle}>
-          <button style={deleteButtonStyle} onClick={() => setShowDialog(true)}>
+        <td className={`${styles.td} ${styles.dateCell}`}>{formattedDate}</td>
+        <td className={styles.td}>
+          <button className={styles.deleteBtn} onClick={() => setShowDialog(true)}>
             Delete
           </button>
         </td>

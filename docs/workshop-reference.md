@@ -338,7 +338,9 @@ What actually happened after `/speckit-implement`, and how it got to a clean `ma
 
 **Constitution ended at v1.2.0** — added Git merge strategy, branch cleanup, squash + explicit issue-close, and the stacked-PR-bottom-up rule (born directly from step 2's pain).
 
-> Biggest takeaway: spec-kit gets you a full, building scaffold fast — the integration, env, and DB last-mile is hands-on. Budget ~1h beyond the implement run.
+8. **UI was unreadable → CSS refactor (PR #62).** The generated components styled everything with inline `style={{}}` objects and hardcoded light colors. In dark mode the header row and selects rendered light-on-light → invisible. Replaced all inline styles with CSS Modules (`TaskList.module.css`, `page.module.css`) driven by light/dark theme variables in `globals.css`. Spec-kit's generated styling is functional, not designed — expect a styling pass.
+
+> Biggest takeaway: spec-kit gets you a full, building scaffold fast — the integration, env, DB, and styling last-mile is hands-on. Budget ~1h beyond the implement run.
 
 ---
 

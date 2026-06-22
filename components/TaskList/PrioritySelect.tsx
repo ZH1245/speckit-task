@@ -1,28 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useState } from 'react';
+import type { ChangeEvent } from 'react';
 
 import type { TaskPriority } from '@/types/task';
+import styles from './TaskList.module.css';
 
 interface PrioritySelectProps {
   value: TaskPriority;
   onChange: (newPriority: TaskPriority) => Promise<void>;
 }
 
-const selectStyle: CSSProperties = {
-  font: 'inherit',
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-};
-
 const priorities: TaskPriority[] = ['low', 'medium', 'high'];
 
 export default function PrioritySelect({ value, onChange }: PrioritySelectProps) {
   const [saving, setSaving] = useState(false);
 
-  async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+  async function handleChange(e: ChangeEvent<HTMLSelectElement>) {
     const newPriority = e.target.value as TaskPriority;
     setSaving(true);
     try {
@@ -34,7 +28,7 @@ export default function PrioritySelect({ value, onChange }: PrioritySelectProps)
 
   return (
     <select
-      style={selectStyle}
+      className={styles.select}
       value={value}
       onChange={handleChange}
       disabled={saving}

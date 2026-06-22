@@ -340,7 +340,9 @@ What actually happened after `/speckit-implement`, and how it got to a clean `ma
 
 8. **UI was unreadable → CSS refactor (PR #62).** The generated components styled everything with inline `style={{}}` objects and hardcoded light colors. In dark mode the header row and selects rendered light-on-light → invisible. Replaced all inline styles with CSS Modules (`TaskList.module.css`, `page.module.css`) driven by light/dark theme variables in `globals.css`. Spec-kit's generated styling is functional, not designed — expect a styling pass.
 
-> Biggest takeaway: spec-kit gets you a full, building scaffold fast — the integration, env, DB, and styling last-mile is hands-on. Budget ~1h beyond the implement run.
+9. **No create button in the UI (PR #64).** The spec made task creation REST-only (POST via curl/Postman), so the generated UI had no create form — you could list/edit/delete but not add. Added a `CreateTaskForm` client component (title + status/priority) that POSTs to `/api/tasks` and `router.refresh()`es the list. Reminder: the UI only contains what the spec asked for — re-read the spec if a feature seems "missing."
+
+> Biggest takeaway: spec-kit gets you a full, building scaffold fast — the integration, env, DB, and styling last-mile is hands-on. Budget ~1h beyond the implement run. And the UI only includes what the spec scoped — gaps trace back to the spec, not the tool.
 
 ---
 

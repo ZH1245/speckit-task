@@ -77,8 +77,12 @@ Deferred TODOs: none
 - **No AI co-author trailers**: commit messages MUST NOT include `Co-Authored-By: Claude ...` or any equivalent AI authorship metadata.
 - **Feature branches**: every feature is built on its own branch (e.g. `001-task-list`). Direct commits to `main` are prohibited.
 - **Push policy**: push feature branches to the remote and open a Pull Request to merge into `main`. Never push straight to `main`. Never force-push a shared branch.
+- **Merge strategy**: squash-merge each PR into `main` so every feature lands as one clean commit. Because a squash drops the PR body, the `Closes #N` keyword does NOT reach `main` — after a squash merge, explicitly close the linked issue (`gh issue close N`) or use a regular merge when auto-close is required.
+- **Branch cleanup**: delete the feature branch immediately after its PR merges (`gh pr merge --delete-branch`, or `git push origin --delete <branch>`). No stale merged branches left on the remote.
+- **Prefer shallow, independent PRs**: branch each task off `main` whenever the task's files are disjoint from other in-flight work. Avoid deep PR stacks (a branch based on another unmerged branch). Stacks force a fixed merge order and cause conflict cascades when collapsed.
+- **Stacked PRs merge bottom-up, in dependency order**: when a stack is unavoidable, merge the base PR first and each dependent only after its base is on `main`. NEVER retarget dependents to `main` and squash them out of order — it rewrites history under the others and produces conflicts. If a conflict needs real judgment, STOP and resolve deliberately; do not blind-resolve.
 
-**Rationale**: Clean, traceable history makes code review, bisect, and rollback reliable. Naming staged files prevents credential leaks.
+**Rationale**: Clean, traceable history makes code review, bisect, and rollback reliable. Naming staged files prevents credential leaks. Shallow independent PRs merge in any order; deep stacks do not, and collapsing them out of order is the single most common cause of an avoidable conflict storm.
 
 ### VII. Code Review (NON-NEGOTIABLE)
 
@@ -121,6 +125,7 @@ Deferred TODOs: none
 | **Implement** | Route handlers validate input at the boundary (II). Types go in `types/` (II). No direct DB calls outside `app/api/` (IV). pnpm only (I). |
 | **Commit** | Conventional Commits format (`type(scope): subject`, ≤50 chars). Stage named files only — no `git add -A`. One logical change per commit; one commit per Spec Kit phase. No AI co-author trailers. Feature branch only — never commit to `main` (VI). |
 | **Review / Merge** | PR MUST pass all review-gate criteria (VII): real DB tests, no mocks, composable components, no duplication, curl-reachable API, boundary validation, typed with JSDoc, issue + docs/ in sync, Conventional Commits on branch. Self-merge prohibited. |
+| **Merge & Cleanup** | Squash-merge to `main`; close the linked issue explicitly after squash (`gh issue close N`). Delete the feature branch on merge. Prefer independent PRs off `main`; merge any unavoidable stack bottom-up in dependency order — never retarget dependents out of order (VI). |
 
 ### Amendment procedure
 
@@ -140,4 +145,4 @@ Deferred TODOs: none
 
 All PRs and spec reviews MUST verify compliance with all five core principles. A violation blocks merge until resolved or an explicit exception is documented in the Complexity Tracking table of the relevant `plan.md`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-06-21 | **Last Amended**: 2026-06-21
+**Version**: 1.2.0 | **Ratified**: 2026-06-21 | **Last Amended**: 2026-06-22

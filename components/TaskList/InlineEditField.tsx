@@ -1,28 +1,14 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import type { KeyboardEvent, CSSProperties } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import type { KeyboardEvent } from 'react';
+
+import styles from './TaskList.module.css';
 
 interface InlineEditFieldProps {
   value: string;
   onSave: (newValue: string) => Promise<void>;
 }
-
-const textStyle: CSSProperties = {
-  cursor: 'text',
-  minHeight: '1em',
-  display: 'inline-block',
-};
-
-const inputStyle: CSSProperties = {
-  font: 'inherit',
-  padding: '0',
-  border: 'none',
-  borderBottom: '1px solid currentColor',
-  outline: 'none',
-  background: 'transparent',
-  width: '100%',
-};
 
 export default function InlineEditField({ value, onSave }: InlineEditFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -64,7 +50,7 @@ export default function InlineEditField({ value, onSave }: InlineEditFieldProps)
     return (
       <input
         ref={inputRef}
-        style={inputStyle}
+        className={styles.inlineInput}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commitEdit}
@@ -74,7 +60,7 @@ export default function InlineEditField({ value, onSave }: InlineEditFieldProps)
   }
 
   return (
-    <span style={textStyle} onClick={startEdit}>
+    <span className={styles.inlineText} onClick={startEdit}>
       {value}
     </span>
   );

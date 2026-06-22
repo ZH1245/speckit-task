@@ -1,28 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useState } from 'react';
+import type { ChangeEvent } from 'react';
 
 import type { TaskStatus } from '@/types/task';
+import styles from './TaskList.module.css';
 
 interface StatusSelectProps {
   value: TaskStatus;
   onChange: (newStatus: TaskStatus) => Promise<void>;
 }
 
-const selectStyle: CSSProperties = {
-  font: 'inherit',
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-};
-
 const statuses: TaskStatus[] = ['todo', 'in-progress', 'done'];
 
 export default function StatusSelect({ value, onChange }: StatusSelectProps) {
   const [saving, setSaving] = useState(false);
 
-  async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+  async function handleChange(e: ChangeEvent<HTMLSelectElement>) {
     const newStatus = e.target.value as TaskStatus;
     setSaving(true);
     try {
@@ -34,7 +28,7 @@ export default function StatusSelect({ value, onChange }: StatusSelectProps) {
 
   return (
     <select
-      style={selectStyle}
+      className={styles.select}
       value={value}
       onChange={handleChange}
       disabled={saving}

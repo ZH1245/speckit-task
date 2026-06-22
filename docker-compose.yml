@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:17
+    container_name: speckit-pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tasks_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - speckit-pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tasks_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  speckit-pgdata:

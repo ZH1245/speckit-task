@@ -1,6 +1,8 @@
 import { listTasks } from '@/lib/tasks';
 import TaskList from '@/components/TaskList/TaskList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const tasks = await listTasks();
 
